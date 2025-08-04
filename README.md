@@ -131,27 +131,6 @@ https://docs.google.com/spreadsheets/d/18nD7_fi7StzBdqiFsIotrp21MWozj5fLqcInsV_-
 										</ByEntityCondition>
 									</Condition>
 								</ConditionGroup>
-								<!-- Add another condition group for testing -->
-								<ConditionGroup>
-									<Condition name="456" delay="0" conditionEdge="none">
-										<ByEntityCondition>
-											<TriggeringEntities triggeringEntitiesRule="any">
-												<EntityRef entityRef="ego" />
-											</TriggeringEntities>
-											<EntityCondition>
-												<ReachPositionCondition tolerance="0.5">
-													<Position>
-													    <!-- Map modification -->
-														<!-- scenario editor's original value: <LanePosition roadId="" laneId="34507" s="50" offset="0"> -->
-														<LanePosition roadId="4" laneId="-1" s="40">
-															<Orientation type="relative" h="0" p="0" r="0" />
-														</LanePosition>
-													</Position>
-												</ReachPositionCondition>
-											</EntityCondition>
-										</ByEntityCondition>
-									</Condition>
-								</ConditionGroup>
 							</StartTrigger>
 						</Event>
 						<Event name="fail exit" priority="parallel">
