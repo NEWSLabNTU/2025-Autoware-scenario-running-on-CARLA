@@ -1,8 +1,3 @@
----
-title: How to write scenario and run simulator using Carla
-
----
-
 # The integration of Tier IV evaluator and CARLA
 
 ## Requirements
