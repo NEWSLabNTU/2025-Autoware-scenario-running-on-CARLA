@@ -32,9 +32,11 @@ to
 </UserDefinedAction>
 ```
 because CARLA expect a command in `CustomCommandAction`.
+
 3. Make sure the format is compatible to OpenSCENARIO 1.0. Below is a reference of the compatibility between scenario simulator v2 and CARLA.
 https://docs.google.com/spreadsheets/d/18nD7_fi7StzBdqiFsIotrp21MWozj5fLqcInsV_-RZY/edit?gid=1967977418#gid=1967977418
-4. Below is an example of modified scenario:
+
+5. Below is an example of modified scenario:
 ```xml
 <?xml version="1.0"?>
 <OpenSCENARIO>
