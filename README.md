@@ -18,7 +18,6 @@ vehicle_model:=sample_vehicle
 2. The converted scenario will be in `/tmp/scenario_test_runner/YOUR_SCENARIO_NAME`. There may be one or more files.
 
 ## Comaptibility between Tier IV evaluator and CARLA
-
 1. Change the map to OpenDrive format because CARLA only accept OpenDrive format now.
 2. Modify evaluator criteria:
 ```xml
@@ -35,7 +34,158 @@ to
 because CARLA expect a command in `CustomCommandAction`.
 3. Make sure the format is compatible to OpenSCENARIO 1.0. Below is a reference of the compatibility between scenario simulator v2 and CARLA.
 https://docs.google.com/spreadsheets/d/18nD7_fi7StzBdqiFsIotrp21MWozj5fLqcInsV_-RZY/edit?gid=1967977418#gid=1967977418
-
+4. Below is an example of modified scenario:
+```xml
+<?xml version="1.0"?>
+<OpenSCENARIO>
+	<FileHeader author="Tatsuya Yamasaki" date="2022-03-04T18:06:53+09:00" description="Sample scenario (with Autoware)" revMajor="1" revMinor="0" />
+	<ParameterDeclarations />
+	<CatalogLocations>
+		<!-- Use the car supported by CARLA-->
+		<VehicleCatalog>
+			<Directory path="catalogs" />
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<!-- Map limitation -->
+		<!-- <LogicFile filepath="$(ros2 pkg prefix \-\-share kashiwanoha_map)/map" /> -->
+		<LogicFile filepath="Town01" />
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="ego">
+			<!-- Use the car supported by CARLA-->
+			<CatalogReference catalogName="VehicleCatalog" entryName="vehicle.volkswagen.t2"/> 
+			<ObjectController>
+				<Controller name="Autoware">
+					<Properties>
+						<Property name="maxJerk" value="1.5" />
+						<Property name="minJerk" value="-1.5" />
+					</Properties>
+				</Controller>
+			</ObjectController>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<!-- Map modification -->
+								<LanePosition roadId="4" laneId="-1" s="48.58">
+									<Orientation type="relative" h="0" p="0" r="0" />
+								</LanePosition>
+							</Position>	
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<RoutingAction>
+							<AcquirePositionAction>
+								<Position>
+								 <!-- Map modification -->
+									<LanePosition roadId="4" laneId="-1" s="30">
+										<Orientation type="relative" h="0" p="0" r="0" />
+									</LanePosition>
+								</Position>
+							</AcquirePositionAction>
+						</RoutingAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="">
+			<Act name="_EndCondition">
+				<ManeuverGroup maximumExecutionCount="1" name="">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="ego" />
+					</Actors>
+					<Maneuver name="">
+						<Event name="success exit" priority="parallel">
+							<Action name="success exit action">
+								<UserDefinedAction>
+									<!-- Use command to run UserDefinedAction -->
+									<CustomCommandAction type="python exitSuccess.py" />
+								</UserDefinedAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="123" delay="0" conditionEdge="none">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="any">
+												<EntityRef entityRef="ego" />
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPositionCondition tolerance="0.5">
+													<Position>
+													    <!-- Map modification -->
+														<!-- scenario editor's original value: <LanePosition roadId="" laneId="34507" s="50" offset="0"> -->
+														<LanePosition roadId="4" laneId="-1" s="50">
+															<Orientation type="relative" h="0" p="0" r="0" />
+														</LanePosition>
+													</Position>
+												</ReachPositionCondition>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+								<!-- Add another condition group for testing -->
+								<ConditionGroup>
+									<Condition name="456" delay="0" conditionEdge="none">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="any">
+												<EntityRef entityRef="ego" />
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPositionCondition tolerance="0.5">
+													<Position>
+													    <!-- Map modification -->
+														<!-- scenario editor's original value: <LanePosition roadId="" laneId="34507" s="50" offset="0"> -->
+														<LanePosition roadId="4" laneId="-1" s="40">
+															<Orientation type="relative" h="0" p="0" r="0" />
+														</LanePosition>
+													</Position>
+												</ReachPositionCondition>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+						<Event name="fail exit" priority="parallel">
+							<Action name="fail exit action">
+								<UserDefinedAction>
+									<!-- Use command to run UserDefinedAction -->
+									<CustomCommandAction type="python exitFailure.py" />
+								</UserDefinedAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="" delay="0" conditionEdge="none">
+										<ByValueCondition>
+											<SimulationTimeCondition value="180" rule="greaterThan" />
+										</ByValueCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="" delay="0" conditionEdge="none">
+							<ByValueCondition>
+								<SimulationTimeCondition value="0" rule="greaterThan" />
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Act>
+		</Story>
+		<StopTrigger />
+	</Storyboard>
+</OpenSCENARIO>
+```
 ## Run .xosc scenario in CARLA
 
 1. Prepare exitSuccess.py and exitFailure.py. Below is an example of exitSuccess.py:
